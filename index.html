@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Ask Me Anything</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #3776ab;
+            text-shadow: 0 0 10px rgba(55, 118, 171, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        textarea, input {
+            width: 100%;
+            background-color: #2d2d2d;
+            color: #ffffff;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #3776ab;
+            box-shadow: 0 0 10px rgba(55, 118, 171, 0.2);
+        }
+
+        #question {
+            min-height: 120px;
+        }
+
+        #answer {
+            min-height: 200px;
+            background-color: #1e1e1e;
+            border-color: #555;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3776ab, #4a9eff);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin: 0 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(55, 118, 171, 0.4);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #dc3545, #ff6b7a);
+        }
+
+        .admin-btn:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .user-btn {
+            background: linear-gradient(135deg, #28a745, #4caf50);
+        }
+
+        .user-btn:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            color: #3776ab;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3776ab;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            color: #ff4444;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .success {
+            color: #4caf50;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid #3776ab;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -10px;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            background-color: #2d2d2d;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+
+        .auth-tab.active {
+            background-color: #3776ab;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .user-panel, .admin-panel {
+            display: none;
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .user-panel.active, .admin-panel.active {
+            display: block;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #6c757d, #8d959d);
+            float: right;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-rejected {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .submissions-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .submission-item {
+            background-color: #1e1e1e;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #3776ab;
+        }
+
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .submission-question {
+            font-weight: bold;
+            color: #3776ab;
+            margin-bottom: 5px;
+        }
+
+        .submission-answer {
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            margin-top: 10px;
+        }
+
+        .approve-btn {
+            background: linear-gradient(135deg, #28a745, #4caf50);
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, #dc3545, #ff6b7a);
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Python</h1>
+        
+        <form id="qaForm">
+            <div class="form-group">
+                <label for="question">Ask Me Anything</label>
+                <textarea 
+                    id="question" 
+                    name="question" 
+                    placeholder="Type your Python question here..."
+                    required
+                ></textarea>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" id="submitBtn">Get Answer</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Processing your question...
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+
+            <div class="form-group">
+                <label for="answer">Answer</label>
+                <textarea 
+                    id="answer" 
+                    name="answer" 
+                    placeholder="Your answer will appear here..."
+                    readonly
+                ></textarea>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" id="userLoginBtn" class="user-btn">User Login</button>
+                <button type="button" id="adminLoginBtn" class="admin-btn">Admin Login</button>
+            </div>
+        </form>
+
+        <!-- User Panel -->
+        <div id="userPanel" class="user-panel">
+            <div class="form-group">
+                <button type="button" id="userLogoutBtn" class="logout-btn">Logout</button>
+                <h3>User Panel - Welcome <span id="userDisplayName"></span></h3>
+            </div>
+            
+            <div class="form-group">
+                <label for="userQuestion">Add Question</label>
+                <textarea id="userQuestion" placeholder="Enter your question..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="userAnswer">Add Answer</label>
+                <textarea id="userAnswer" placeholder="Enter your answer..."></textarea>
+            </div>
+            
+            <div class="btn-container">
+                <button type="button" id="submitUserQA">Submit for Approval</button>
+            </div>
+
+            <h4>Your Submissions:</h4>
+            <div id="userSubmissions" class="submissions-list"></div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel">
+            <div class="form-group">
+                <button type="button" id="adminLogoutBtn" class="logout-btn">Logout</button>
+                <h3>Admin Panel - Welcome Admin</h3>
+            </div>
+            
+            <div class="form-group">
+                <label for="adminQuestion">Add Question</label>
+                <textarea id="adminQuestion" placeholder="Enter question..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="adminAnswer">Add Answer</label>
+                <textarea id="adminAnswer" placeholder="Enter answer..."></textarea>
+            </div>
+            
+            <div class="btn-container">
+                <button type="button" id="submitAdminQA">Add to Database</button>
+            </div>
+
+            <h4>Pending Approvals:</h4>
+            <div id="pendingApprovals" class="submissions-list"></div>
+        </div>
+
+        <div class="footer">
+            Powered by Python AI Assistant
+        </div>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab">Login</button>
+                <button class="auth-tab" id="registerTab">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div class="btn-container">
+                    <button type="submit" id="loginSubmit">Login</button>
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div class="btn-container">
+                    <button type="submit" id="registerSubmit">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentUserType = null;
+        let isModalOpen = false;
+
+        // Modal elements
+        const modal = document.getElementById('authModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const closeModal = document.getElementById('closeModal');
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        // Button elements
+        const userLoginBtn = document.getElementById('userLoginBtn');
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        const userLogoutBtn = document.getElementById('userLogoutBtn');
+        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+
+        // Panel elements
+        const userPanel = document.getElementById('userPanel');
+        const adminPanel = document.getElementById('adminPanel');
+        const userDisplayName = document.getElementById('userDisplayName');
+
+        // Form elements
+        const qaForm = document.getElementById('qaForm');
+        const questionTextarea = document.getElementById('question');
+        const answerTextarea = document.getElementById('answer');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const successDiv = document.getElementById('success');
+
+        // Mock data storage (in a real app, this would be in a database)
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
+        let qaDatabase = JSON.parse(localStorage.getItem('qaDatabase') || '[]');
+
+        // Admin credentials (in a real app, this would be more secure)
+        const adminCredentials = { username: 'admin', password: 'admin123' };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Modal events
+            userLoginBtn.addEventListener('click', () => openModal('user'));
+            adminLoginBtn.addEventListener('click', () => openModal('admin'));
+            closeModal.addEventListener('click', closeModalHandler);
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) closeModalHandler();
+            });
+
+            // Tab switching
+            loginTab.addEventListener('click', () => switchTab('login'));
+            registerTab.addEventListener('click', () => switchTab('register'));
+
+            // Authentication forms
+            loginForm.addEventListener('submit', handleLogin);
+            registerForm.addEventListener('submit', handleRegister);
+
+            // Logout buttons
+            userLogoutBtn.addEventListener('click', logout);
+            adminLogoutBtn.addEventListener('click', logout);
+
+            // QA form
+            qaForm.addEventListener('submit', handleQASubmit);
+
+            // User panel
+            document.getElementById('submitUserQA').addEventListener('click', handleUserSubmission);
+
+            // Admin panel
+            document.getElementById('submitAdminQA').addEventListener('click', handleAdminSubmission);
+
+            // Auto-resize textarea
+            questionTextarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.max(120, this.scrollHeight) + 'px';
+            });
+        }
+
+        function openModal(userType) {
+            isModalOpen = true;
+            currentUserType = userType;
+            modalTitle.textContent = userType === 'admin' ? 'Admin Login' : 'User Login';
+            
+            // Hide register tab for admin
+            if (userType === 'admin') {
+                registerTab.classList.add('hide');
+                switchTab('login');
+            } else {
+                registerTab.classList.remove('hide');
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModalHandler() {
+            isModalOpen = false;
+            modal.style.display = 'none';
+            clearForms();
+        }
+
+        function switchTab(tab) {
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+            } else {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginForm.classList.remove('active');
+                registerForm.classList.add('active');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (currentUserType === 'admin') {
+                if (username === adminCredentials.username && password === adminCredentials.password) {
+                    currentUser = { username, type: 'admin' };
+                    showPanel('admin');
+                    closeModalHandler();
+                    showSuccess('Admin login successful!');
+                } else {
+                    showError('Invalid admin credentials!');
+                }
+            } else {
+                const user = users.find(u => u.username === username && u.password === password);
+                if (user) {
+                    currentUser = { username, type: 'user' };
+                    showPanel('user');
+                    closeModalHandler();
+                    showSuccess('User login successful!');
+                } else {
+                    showError('Invalid user credentials!');
+                }
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match!');
+                return;
+            }
+
+            if (users.find(u => u.username === username)) {
+                showError('Username already exists!');
+                return;
+            }
+
+            users.push({ username, password });
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            showSuccess('Registration successful! Please login.');
+            switchTab('login');
+        }
+
+        function showPanel(type) {
+            if (type === 'admin') {
+                adminPanel.classList.add('active');
+                userPanel.classList.remove('active');
+                loadPendingApprovals();
+            } else {
+                userPanel.classList.add('active');
+                adminPanel.classList.remove('active');
+                userDisplayName.textContent = currentUser.username;
+                loadUserSubmissions();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            currentUserType = null;
+            userPanel.classList.remove('active');
+            adminPanel.classList.remove('active');
+            clearForms();
+        }
+
+        function clearForms() {
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+        }
+
+        async function handleQASubmit(e) {
+            e.preventDefault();
+            
+            const question = questionTextarea.value.trim();
+            if (!question) return;
+
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            errorDiv.style.display = 'none';
+            answerTextarea.value = '';
+
+            try {
+                const webhookUrl = 'https://anjali1234.app.n8n.cloud/webhook/ask-python';
+                
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                answerTextarea.value = data.answer || 'No answer received';
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to get answer. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function handleUserSubmission() {
+            const question = document.getElementById('userQuestion').value.trim();
+            const answer = document.getElementById('userAnswer').value.trim();
+
+            if (!question || !answer) {
+                showError('Please fill in both question and answer fields.');
+                return;
+            }
+
+            const submission = {
+                id: Date.now(),
+                username: currentUser.username,
+                question,
+                answer,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+
+            submissions.push(submission);
+            localStorage.setItem('submissions', JSON.stringify(submissions));
+
+            document.getElementById('userQuestion').value = '';
+            document.getElementById('userAnswer').value = '';
+            
+            showSuccess('Question submitted for approval!');
+            loadUserSubmissions();
+        }
+
+        function handleAdminSubmission() {
+            const question = document.getElementById('adminQuestion').value.trim();
+            const answer = document.getElementById('adminAnswer').value.trim();
+
+            if (!question || !answer) {
+                showError('Please fill in both question and answer fields.');
+                return;
+            }
+
+            const qaEntry = {
+                id: Date.now(),
+                question,
+                answer,
+                timestamp: new Date().toISOString()
+            };
+
+            qaDatabase.push(qaEntry);
+            localStorage.setItem('qaDatabase', JSON.stringify(qaDatabase));
+
+            document.getElementById('adminQuestion').value = '';
+            document.getElementById('adminAnswer').value = '';
+            
+            showSuccess('Question and answer added to database!');
+        }
+
+        function loadUserSubmissions() {
+            const userSubmissions = submissions.filter(s => s.username === currentUser.username);
+            const container = document.getElementById('userSubmissions');
+            
+            if (userSubmissions.length === 0) {
+                container.innerHTML = '<p>No submissions yet.</p>';
+                return;
+            }
+
+            container.innerHTML = userSubmissions.map(submission => `
+                <div class="submission-item">
+                    <div class="submission-header">
+                        <span class="status-badge status-${submission.status}">
+                            ${submission.status.toUpperCase()}
+                        </span>
+                        <small>${new Date(submission.timestamp).toLocaleDateString()}</small>
+                    </div>
+                    <div class="submission-question">${submission.question}</div>
+                    <div class="submission-answer">${submission.answer}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadPendingApprovals() {
+            const pendingSubmissions = submissions.filter(s => s.status === 'pending');
+            const container = document.getElementById('pendingApprovals');
+            
+            if (pendingSubmissions.length === 0) {
+                container.innerHTML = '<p>No pending approvals.</p>';
+                return;
+            }
+
+            container.innerHTML = pendingSubmissions.map(submission => `
+                <div class="submission-item">
+                    <div class="submission-header">
+                        <strong>By: ${submission.username}</strong>
+                        <small>${new Date(submission.timestamp).toLocaleDateString()}</small>
+                    </div>
+                    <div class="submission-question">${submission.question}</div>
+                    <div class="submission-answer">${submission.answer}</div>
+                    <div class="action-buttons">
+                        <button class="approve-btn" onclick="approveSubmission(${submission.id})">Approve</button>
+                        <button class="reject-btn" onclick="rejectSubmission(${submission.id})">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveSubmission(id) {
+            const submission = submissions.find(s => s.id === id);
+            if (submission) {
+                submission.status = 'approved';
+                
+                // Add to main database
+                qaDatabase.push({
+                    id: Date.now(),
+                    question: submission.question,
+                    answer: submission.answer,
+                    timestamp: new Date().toISOString()
+                });
+                
+                localStorage.setItem('submissions', JSON.stringify(submissions));
+                localStorage.setItem('qaDatabase', JSON.stringify(qaDatabase));
+                
+                showSuccess('Submission approved and added to database!');
+                loadPendingApprovals();
+            }
+        }
+
+        function rejectSubmission(id) {
+            const submission = submissions.find(s => s.id === id);
+            if (submission) {
+                submission.status = 'rejected';
+                localStorage.setItem('submissions', JSON.stringify(submissions));
+                
+                showSuccess('Submission rejected.');
+                loadPendingApprovals();
+            }
+        }
+    </script>
+</body>
+</html>
